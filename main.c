@@ -27,7 +27,8 @@ typedef struct lnode *list;
 void inorder_tree_walk(tree t);
 tree rbt_search(tree t, const char data[]);
 void rbt_insert(tree t, const char *data, int len);
-void left_rotation(tree t, tree node);
+void left_rotate(tree *root, tree *node);
+void right_rotate(tree *root, tree *node);
 void rbt_insert_fixup(tree t, tree node);
 
 int main() {
@@ -71,23 +72,37 @@ void rbt_insert(tree t, const char *data, int len) {
     rbt_insert_fixup(t, new_node);
 }
 
-void left_rotation(tree t, tree node) {
-    tree tmp = node->right;
-    node->right = tmp->left;
+void left_rotate(tree *root, tree *node) {
+    tree tmp = (*node)->right;
+    (*node)->right = tmp->left;
     if(tmp->left != NULL)
-        tmp->left->parent = node;
-    tmp->parent = node->parent;
-    if(node->parent == NULL)
-        t = tmp;
-    else if(node == node->parent->left)
-        node->parent->left = tmp;
-    else node->parent->right = tmp;
-    tmp->left = node;
-    node->parent = tmp;
+        tmp->left->parent = *node;
+    tmp->parent = (*node)->parent;
+    if((*node)->parent == NULL)
+        *root = tmp;
+    else if(*node == (*node)->parent->left)
+        (*node)->parent->left = tmp;
+    else (*node)->parent->right = tmp;
+    tmp->left = *node;
+    (*node)->parent = tmp;
 }
 
+void right_rotate(tree *root, tree *node) {
+    tree tmp = (*node)->left;
+    (*node)->left = tmp->right;
+    if(tmp->right != NULL)
+        tmp->right->parent = (*node);
+    tmp->parent = (*node)->parent;
+    if((*node)->parent == NULL)
+        *root = tmp;
+    else if((*node) == (*node)->parent->left)
+        (*node)->parent->left = tmp;
+    else (*node)->parent->right = tmp;
+    tmp->right = (*node);
+    (*node)->parent = tmp;
+}
+
+
 void rbt_insert_fixup(tree t, tree node) {
-    while(node->parent->colour == RED) {
-        if(node->parent == node->parent->parent->left)
-    }
+
 }
