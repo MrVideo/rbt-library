@@ -30,10 +30,14 @@ void rbt_insert(tree *t, const char *data, int len);
 void left_rotate(tree *root, tree *node);
 void right_rotate(tree *root, tree *node);
 void rbt_insert_fixup(tree *t, tree *z);
+void add_to_list(tree *t, list *l, int len);
+void print_list(list l);
+void destroy_list(list *l);
 
 int main() {
     // Tree implementation testing
     tree t = NULL;
+    list l = NULL;
     char data1[] = "abcde";
     char data2[] = "aaaaa";
     char data3[] = "mmmmm";
@@ -41,12 +45,28 @@ int main() {
     rbt_insert(&t, data2, (int)strlen(data2));
     rbt_insert(&t, data3, (int) strlen(data3));
 
-    if(rbt_search(t, data2) != NULL) printf("Found %s.\n", data2);
-    else printf("Not found.\n");
+    add_to_list(&t, &l, 5);
 
-    if(rbt_search(t, "maskm") != NULL) printf("Found %s.\n", "maskm");
-    else printf("Not found.\n");
+    inorder_tree_walk(t);
+    print_list(l);
+
+    destroy_list(&l);
+
+    inorder_tree_walk(t);
+    print_list(l);
+
     return 0;
+}
+
+void add_to_list(tree *t, list *l, int len) {
+    if(*t == NULL) return;
+
+    add_to_list(&(*t)->right, l, len);
+    list tmp = malloc(sizeof(struct lnode) + sizeof(char) * (len + 1));
+    strcpy(tmp->data, (*t)->data);
+    tmp->next = *l;
+    *l = tmp;
+    add_to_list(&(*t)->left, l, len);
 }
 
 void inorder_tree_walk(tree t) {
@@ -169,3 +189,25 @@ void rbt_insert_fixup(tree *t, tree *z) {
     }
     (*t)->color = BLACK;
 }
+
+void print_list(list l) {
+    list curr = l;
+    while(curr != NULL) {
+        printf("%s -> ", curr->data);
+        curr = curr->next;
+    }
+    printf("END\n");
+}
+
+void destroy_list(list *l) {
+    list curr = *l, tmp = NULL;
+    while(curr != NULL) {
+        tmp = curr->next;
+        free(curr);
+        curr = tmp;
+    }
+    free(tmp);
+    *l = NULL;
+    l = NULL;
+}
+
