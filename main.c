@@ -8,7 +8,7 @@
 // RBT Node
 struct tnode {
     struct tnode *left, *right, *parent;
-    char colour;
+    char color;
     char data[];
 };
 
@@ -26,50 +26,70 @@ typedef struct lnode *list;
 
 void inorder_tree_walk(tree t);
 tree rbt_search(tree t, const char data[]);
-void rbt_insert(tree t, const char *data, int len);
+void rbt_insert(tree *t, const char *data, int len);
 void left_rotate(tree *root, tree *node);
 void right_rotate(tree *root, tree *node);
-void rbt_insert_fixup(tree t, tree node);
+void rbt_insert_fixup(tree *t, tree *z);
 
 int main() {
+    // Tree implementation testing
+    tree t = NULL;
+    char data1[] = "abcde";
+    char data2[] = "aaaaa";
+    char data3[] = "mmmmm";
+    rbt_insert(&t, data1, (int)strlen(data1));
+    rbt_insert(&t, data2, (int)strlen(data2));
+    rbt_insert(&t, data3, (int) strlen(data3));
 
+    if(rbt_search(t, data2) != NULL) printf("Found %s.\n", data2);
+    else printf("Not found.\n");
+
+    if(rbt_search(t, "maskm") != NULL) printf("Found %s.\n", "maskm");
+    else printf("Not found.\n");
     return 0;
 }
 
 void inorder_tree_walk(tree t) {
-    if(t == NULL) return;
+    if(t == NULL) {
+        printf("End of tree\n");
+        return;
+    }
     inorder_tree_walk(t->left);
-    printf("%s", t->data);
+    printf("%s\n", t->data);
     inorder_tree_walk(t->right);
 }
 
 tree rbt_search(tree t, const char *data) {
-    int search_result = strcmp(data, t->data);
-    if(!search_result || t == NULL) return t;
-    else if(search_result < 0) return rbt_search(t->left, data);
-    else return rbt_search(t->right, data);
+    int search_result;
+    if(t == NULL) return t;
+    else {
+        search_result = strcmp(t->data, data);
+        if(!search_result) return t;
+        else if(search_result < 0) return rbt_search(t->right, data);
+        else return rbt_search(t->left, data);
+    }
 }
 
-void rbt_insert(tree t, const char *data, int len) {
-    tree new_node = malloc(sizeof(struct tnode) + sizeof(char) * (len + 1));
-    strcpy(new_node->data, data);
-    tree tmp = NULL, root = t;
+void rbt_insert(tree *t, const char *data, int len) {
+    tree z = malloc(sizeof(struct tnode) + sizeof(char) * (len + 1));
+    strcpy(z->data, data);
+    tree y = NULL, x = *t;
 
-    while(root != NULL) {
-        tmp = root;
-        if(strcmp(new_node->data, root->data) < 0)
-            root = root->left;
-        else root = root->right;
+    while(x != NULL) {
+        y = x;
+        if(strcmp(z->data, x->data) < 0)
+            x = x->left;
+        else x = x->right;
     }
-    new_node->parent = tmp;
-    if(tmp == NULL) t = new_node;
-    else if(strcmp(new_node->data, tmp->data) < 0)
-        tmp->left = new_node;
-    else tmp->right = new_node;
-    new_node->left = NULL;
-    new_node->right = NULL;
-    new_node->colour = RED;
-    rbt_insert_fixup(t, new_node);
+    z->parent = y;
+    if(y == NULL) *t = z;
+    else if(strcmp(z->data, y->data) < 0)
+        y->left = z;
+    else y->right = z;
+    z->left = NULL;
+    z->right = NULL;
+    z->color = RED;
+    rbt_insert_fixup(t, &z);
 }
 
 void left_rotate(tree *root, tree *node) {
@@ -102,7 +122,50 @@ void right_rotate(tree *root, tree *node) {
     (*node)->parent = tmp;
 }
 
+void rbt_insert_fixup(tree *t, tree *z) {
+    tree parent = NULL, grandparent = NULL;
 
-void rbt_insert_fixup(tree t, tree node) {
+    while(((*z) != *t) && ((*z)->color != BLACK) && ((*z)->parent->color == RED)) {
+        parent = (*z)->parent;
+        grandparent = (*z)->parent->parent;
 
+        if(parent == grandparent->left) {
+            tree uncle = grandparent->right;
+            if(uncle != NULL && uncle->color == RED) {
+                grandparent->color = RED;
+                parent->color = BLACK;
+                uncle->color = BLACK;
+                *z = grandparent;
+            } else {
+                if((*z) == parent->right) {
+                    left_rotate(t, &parent);
+                    (*z) = parent;
+                    parent = (*z)->parent;
+                }
+                right_rotate(t, &grandparent);
+                parent->color = BLACK;
+                grandparent->color = RED;
+                (*z) = parent;
+            }
+        } else {
+            tree uncle = grandparent->left;
+            if(uncle != NULL && uncle->color == RED) {
+                grandparent->color = RED;
+                parent->color = BLACK;
+                uncle->color = BLACK;
+                *z = grandparent;
+            } else {
+                if((*z) == parent->left) {
+                    right_rotate(t, &parent);
+                    (*z) = parent;
+                    parent = (*z)->parent;
+                }
+                left_rotate(t, &grandparent);
+                parent->color = BLACK;
+                grandparent->color = RED;
+                (*z) = parent;
+            }
+        }
+    }
+    (*t)->color = BLACK;
 }
