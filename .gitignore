@@ -1,5 +1,5 @@
-# Configuration files
-.idea
+# File system
+.DS_Store
 
-# Build files
-cmake-build-*/
+# Output executable
+main
